@@ -1,0 +1,63 @@
+name: 'TryHackMe Profile Badge Workflow'
+description: 'Render a live TryHackMe profile badge PNG and commit it to your repo'
+branding:
+  icon: 'award'
+  color: 'red'
+
+inputs:
+  user_public_id:
+    description: 'TryHackMe user public ID'
+    required: true
+  image_path:
+    description: 'Path where the badge PNG is saved'
+    required: false
+    default: 'assets/thm_badge.png'
+  committer_username:
+    description: 'Git username for the commit'
+    required: false
+    default: 'github-actions[bot]'
+  committer_email:
+    description: 'Git email for the commit'
+    required: false
+    default: '41898282+github-actions[bot]@users.noreply.github.com'
+  commit_message:
+    description: 'Commit message'
+    required: false
+    default: 'chore: update tryhackme badge'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install curl_cffi
+
+    - name: Render badge
+      shell: bash
+      env:
+        USER_PUBLIC_ID: ${{ inputs.user_public_id }}
+        IMAGE_PATH: ${{ inputs.image_path }}
+      run: python3 "${{ github.action_path }}/thm_badge.py" "$USER_PUBLIC_ID" "$IMAGE_PATH"
+
+    - name: Commit and push
+      shell: bash
+      env:
+        COMMITTER_USERNAME: ${{ inputs.committer_username }}
+        COMMITTER_EMAIL: ${{ inputs.committer_email }}
+        COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        IMAGE_PATH: ${{ inputs.image_path }}
+      run: |
+        git config user.name "$COMMITTER_USERNAME"
+        git config user.email "$COMMITTER_EMAIL"
+        if git diff --quiet -- "$IMAGE_PATH" && git ls-files --error-unmatch -- "$IMAGE_PATH" >/dev/null 2>&1; then
+          echo "Badge unchanged, skipping commit."
+          exit 0
+        fi
+        git add "$IMAGE_PATH"
+        git commit -m "$COMMIT_MESSAGE"
+        git push
