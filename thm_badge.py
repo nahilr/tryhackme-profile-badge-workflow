@@ -132,9 +132,9 @@ def build_html(stats, avatar_uri, total_points, rank_hex):
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" />
   <style>
-    body {{ width: 329px; height: 88px; margin: 0; }}
+    body {{ width: 329px; height: 88px; margin: 0; background: transparent; }}
     #thm-badge {{
-      width: 327px; height: 84px;
+      width: 329px; height: 88px;
       background-image: url('https://tryhackme.com/img/thm_public_badge_bg.svg');
       background-size: cover;
       display: flex; align-items: center; gap: 12px;
@@ -210,6 +210,7 @@ def render(html, output):
     cmd = [
         chrome,
         "--headless=new", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage",
+        "--default-background-color=00000000",
         f"--virtual-time-budget=15000",
         f"--window-size={WIDTH},{HEIGHT}",
         f"--screenshot={output}",
